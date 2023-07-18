@@ -6,23 +6,6 @@ const { generateDependencyReport } = require('@discordjs/voice');
 
 console.log(generateDependencyReport());
 
-// kick.js
-const { Permissions } = require('discord.js');
-
-module.exports = {
-	name: 'kick',
-	description: 'Kick a member',
-	execute(message) {
-		// Check if user has the "KICK_MEMBERS" permission
-		if (!message.member.permissions.has(Permissions.FLAGS.KICK_MEMBERS)) {
-			return message.reply('You do not have permission to use this command.');
-		}
-
-		// Rest of the kick logic...
-	},
-};
-
-
 const client = new Client({ intents:
 	[
 
