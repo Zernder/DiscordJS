@@ -15,8 +15,7 @@ module.exports = {
 		),
 	async execute(interaction) {
 		const member = interaction.options.getMember('member');
-		const reason =
-      interaction.options.getString('reason') || 'No reason provided';
+		// const reason = interaction.options.getString('reason') || 'No reason provided';
 
 		if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
 			return interaction.reply({
@@ -25,7 +24,7 @@ module.exports = {
 			});
 		}
 
-		if (!member.Bannable) {
+		if (!member.bannable) {
 			return interaction.reply({
 				content: 'The member cannot be banned.',
 				ephemeral: true,
@@ -33,7 +32,7 @@ module.exports = {
 		}
 
 		try {
-			await member.ban(reason);
+			await member.ban(member);
 			interaction.reply({
 				content: `Successfully banned ${member.user.tag}`,
 				ephemeral: true,
