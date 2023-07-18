@@ -1,0 +1,79 @@
+const {	GatewayIntentBits, ApplicationCommandOptionType, SlashCommandBuilder } = require('discord.js');
+
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('ban')
+		.setDescription('Bans the Member.'),
+	options: [
+		{
+			name: 'member',
+			description: 'The member to ban',
+			type: ApplicationCommandOptionType.Mentionable,
+			required: true,
+		},
+		{
+			name: 'reason',
+			description: 'The reason for the ban',
+			type: ApplicationCommandOptionType.String,
+			required: false,
+		},
+	],
+
+	async execute(interaction) {
+		// interaction.guild is the object representing the Guild in which the command was run
+		await interaction.reply(`This server is ${interaction.guild.name} and has ${interaction.guild.memberCount} members.`);
+	},
+	/**
+   * @param {import('discord.js').Client} _client
+   * @param {import('discord.js').CommandInteraction} interaction
+   */
+
+
+	PermissionsRequired: [GatewayIntentBits.GUILD_MODERATION, GatewayIntentBits.ban],
+	botpermissions: [GatewayIntentBits.GUILD_MODERATION, GatewayIntentBits.ban],
+
+	callback: async (client, interaction) => {
+		const targetUserId = interaction.options.getmember('member').value;
+		const reason =
+      interaction.options.getString('reason') ?? 'No reason provided';
+
+		await interaction.deferReply({ ephemeral: true });
+
+		const targetUser = -(await interaction.guild.members.fetch(targetUserId));
+
+		if (!targetUser) {
+			await interaction.editReply({ content: 'User not found' });
+			return;
+		}
+
+		if (!targetUser.bannable) {
+			await interaction.editReply({ content: 'User cannot be banned' });
+			return;
+		}
+
+		const targetUserRolePosition = targetUser.roles.highest.position;
+		const requesterUserRolePosition = interaction.member.roles.highest.position;
+		const botRolePosition = interaction.guild.me.roles.highest.position;
+
+		if (requesterUserRolePosition <= targetUserRolePosition) {
+			await interaction.editReply({ content: 'You cannot ban this user' });
+			return;
+		}
+		if (targetUserRolePosition >= botRolePosition) {
+			await interaction.editReply({ content: 'I cannot ban this user' });
+			return;
+		}
+
+		try {
+			await targetUser.ban({ reason });
+			await interaction.editReply({ content: 'User banned' });
+		}
+		catch (error) {
+			console.error(error);
+			await interaction.editReply({ content: 'Failed to ban user' });
+			await targetUser.send(
+				`You have been banned from ${interaction.guild.name} for ${reason}`,
+			);
+		}
+	},
+};
